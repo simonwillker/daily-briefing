@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CCA-F Study Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<style>
+  :root {
+    --paper: #eef1ef;
+    --card: #ffffff;
+    --ink: #16242b;
+    --muted: #5c6b6a;
+    --line: #c7d0cd;
+    --line-strong: #9fb0ac;
+    --blueprint: #1f5c73;
+    --blueprint-bright: #2f8fae;
+    --blueprint-wash: #e3edef;
+    --rust: #b8502f;
+    --rust-wash: #f7e6de;
+    --moss: #3f7d52;
+    --moss-wash: #e2ede4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #10181b;
+      --card: #172226;
+      --ink: #dfe8e6;
+      --muted: #8a9a98;
+      --line: #2a3a3d;
+      --line-strong: #3c4f52;
+      --blueprint: #5cc2e0;
+      --blueprint-bright: #86d7ef;
+      --blueprint-wash: #16323b;
+      --rust: #e08a68;
+      --rust-wash: #3a2620;
+      --moss: #7fcc9a;
+      --moss-wash: #1e3226;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #10181b;
+    --card: #172226;
+    --ink: #dfe8e6;
+    --muted: #8a9a98;
+    --line: #2a3a3d;
+    --line-strong: #3c4f52;
+    --blueprint: #5cc2e0;
+    --blueprint-bright: #86d7ef;
+    --blueprint-wash: #16323b;
+    --rust: #e08a68;
+    --rust-wash: #3a2620;
+    --moss: #7fcc9a;
+    --moss-wash: #1e3226;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', 'Noto Sans JP', 'Noto Sans SC', sans-serif;
+    padding: 28px 18px 72px;
+    -webkit-font-smoothing: antialiased;
+  }
+  [lang-ja] { font-family: 'Noto Sans JP', 'IBM Plex Sans', sans-serif; }
+  [lang-zh] { font-family: 'Noto Sans SC', 'IBM Plex Sans', sans-serif; }
+
+  .sheet { max-width: 860px; margin: 0 auto; }
+
+  /* ---- title block ---- */
+  .titleblock {
+    border: 1.5px solid var(--line-strong);
+    border-radius: 4px;
+    background: var(--card);
+    padding: 18px 22px;
+    margin-bottom: 20px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 14px 24px;
+    align-items: end;
+  }
+  .titleblock h1 {
+    margin: 0 0 4px;
+    font-size: 24px;
+    letter-spacing: 0.01em;
+    text-wrap: balance;
+  }
+  .titleblock .sub {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13.5px;
+  }
+  .meta-row {
+    display: flex;
+    gap: 18px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    grid-column: 1 / -1;
+    border-top: 1px dashed var(--line);
+    padding-top: 10px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+  }
+  .meta-row b { color: var(--ink); font-weight: 600; }
+
+  .scale-select {
+    display: inline-flex;
+    border: 1px solid var(--line-strong);
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  .scale-select button {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.03em;
+    padding: 7px 13px;
+    border: none;
+    background: var(--card);
+    color: var(--muted);
+    cursor: pointer;
+    border-left: 1px solid var(--line-strong);
+  }
+  .scale-select button:first-child { border-left: none; }
+  .scale-select button.active {
+    background: var(--blueprint);
+    color: #fff;
+  }
+  .scale-select button:focus-visible,
+  button:focus-visible,
+  input:focus-visible {
+    outline: 2px solid var(--blueprint-bright);
+    outline-offset: 2px;
+  }
+
+  /* ---- sessions grid ---- */
+  .sessions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 620px) {
+    .sessions { grid-template-columns: 1fr; }
+  }
+
+  .session-card {
+    position: relative;
+    background: var(--card);
+    border: 1.5px solid var(--line-strong);
+    border-radius: 6px;
+    padding: 20px;
+  }
+  .session-card::before, .session-card::after {
+    content: "";
+    position: absolute;
+    width: 10px; height: 10px;
+    border: 1.5px solid var(--blueprint);
+  }
+  .session-card::before { top: -1.5px; left: -1.5px; border-right: none; border-bottom: none; }
+  .session-card::after { bottom: -1.5px; right: -1.5px; border-left: none; border-top: none; }
+  .session-card.current { border-color: var(--blueprint); }
+
+  .session-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    gap: 10px;
+  }
+  .session-time {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: var(--blueprint);
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .dial {
+    width: 12px; height: 12px; border-radius: 50%;
+    border: 1.5px solid var(--blueprint);
+    flex: none;
+  }
+  .dial.pm { background: conic-gradient(var(--blueprint) 0 180deg, transparent 180deg 360deg); }
+  .dial.am { background: conic-gradient(var(--blueprint) 0 60deg, transparent 60deg 360deg); }
+
+  .domain-code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 2px 6px;
+    white-space: nowrap;
+  }
+
+  .session-card h2 {
+    font-size: 17px;
+    margin: 0 0 4px;
+    text-wrap: balance;
+  }
+  .domain-label {
+    font-size: 11.5px;
+    color: var(--blueprint);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0 0 10px;
+    font-weight: 600;
+  }
+  .explanation {
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--ink);
+    margin: 0 0 16px;
+  }
+
+  .status-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    padding: 3px 9px;
+    border-radius: 20px;
+    text-transform: uppercase;
+  }
+  .status-chip.done { background: var(--moss-wash); color: var(--moss); }
+  .status-chip.pending { background: var(--blueprint-wash); color: var(--blueprint); }
+
+  .btn {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 13.5px;
+    font-weight: 600;
+    padding: 9px 16px;
+    border-radius: 5px;
+    border: 1.5px solid var(--blueprint);
+    background: var(--blueprint);
+    color: #fff;
+    cursor: pointer;
+  }
+  .btn.secondary {
+    background: transparent;
+    color: var(--blueprint);
+  }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  /* ---- quiz ---- */
+  .quiz { margin-top: 16px; border-top: 1px dashed var(--line); padding-top: 16px; }
+  .quiz-q { margin-bottom: 16px; }
+  .quiz-q p.qtext { font-size: 14px; font-weight: 600; margin: 0 0 8px; line-height: 1.5; }
+  .quiz-opt {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    font-size: 13.5px;
+    line-height: 1.5;
+    padding: 7px 9px;
+    border-radius: 5px;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .quiz-opt:hover { background: var(--blueprint-wash); }
+  .quiz-opt input { margin-top: 3px; accent-color: var(--blueprint); }
+  .quiz-opt.correct { background: var(--moss-wash); border-color: var(--moss); }
+  .quiz-opt.incorrect { background: var(--rust-wash); border-color: var(--rust); }
+  .rationale {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin: 6px 0 0 26px;
+    line-height: 1.5;
+  }
+
+  .score-stamp {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    padding: 8px 14px;
+    border: 2px solid var(--moss);
+    color: var(--moss);
+    border-radius: 5px;
+    letter-spacing: 0.04em;
+    margin-bottom: 14px;
+    transform: rotate(-1deg);
+  }
+  .score-stamp.low { border-color: var(--rust); color: var(--rust); }
+
+  /* ---- history ---- */
+  .history-block {
+    background: var(--card);
+    border: 1.5px solid var(--line-strong);
+    border-radius: 6px;
+    padding: 20px 22px;
+  }
+  .history-block h2 {
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--blueprint);
+    margin: 0 0 4px;
+  }
+  .history-block .sub { font-size: 12.5px; color: var(--muted); margin: 0 0 14px; }
+  .history-table-wrap { overflow-x: auto; }
+  table.history-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.history-table th {
+    text-align: left;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    border-bottom: 1.5px solid var(--line-strong);
+    padding: 6px 10px;
+    white-space: nowrap;
+  }
+  table.history-table td {
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--line);
+    font-variant-numeric: tabular-nums;
+  }
+  table.history-table tr.clickable { cursor: pointer; }
+  table.history-table tr.clickable:hover td { background: var(--blueprint-wash); }
+  .empty-history { font-size: 13px; color: var(--muted); padding: 10px 0; }
+
+  .footnote {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 20px;
+    line-height: 1.6;
+    border-top: 1px dashed var(--line);
+    padding-top: 14px;
+  }
+
+  .review-banner {
+    background: var(--blueprint-wash);
+    color: var(--blueprint);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 8px 14px;
+    border-radius: 5px;
+    margin-bottom: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .review-banner button {
+    background: none; border: 1px solid var(--blueprint); color: var(--blueprint);
+    border-radius: 4px; padding: 4px 9px; font-family: inherit; font-size: 11px; cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<div class="sheet" id="app"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var LABELS = {
+    appTitle: {en:"CCA-F Study Log", ja:"CCA-F 学習ログ", zh:"CCA-F 学习日志"},
+    appSub: {en:"Claude Certified Architect — Foundations · Twice-daily prep", ja:"Claude Certified Architect（基礎資格）・1日2回の学習", zh:"Claude 认证架构师·基础级 · 每日两次学习"},
+    sheetLabel: {en:"SHEET", ja:"シート", zh:"页"},
+    dateLabel: {en:"DATE", ja:"日付", zh:"日期"},
+    cycleLabel: {en:"CYCLE", ja:"サイクル", zh:"周期"},
+    amLabel: {en:"AM SESSION · 08:00", ja:"朝の回・8:00", zh:"上午场·8:00"},
+    pmLabel: {en:"PM SESSION · 20:00", ja:"夜の回・20:00", zh:"晚上场·20:00"},
+    startTest: {en:"Start test", ja:"テストを開始", zh:"开始测试"},
+    retake: {en:"Retake", ja:"再受験する", zh:"重新测试"},
+    submit: {en:"Submit answers", ja:"回答を送信", zh:"提交答案"},
+    done: {en:"Completed", ja:"完了", zh:"已完成"},
+    notStarted: {en:"Not tested yet", ja:"未受験", zh:"尚未测试"},
+    hideQuiz: {en:"Close", ja:"閉じる", zh:"关闭"},
+    historyTitle: {en:"Revision log", ja:"学習履歴（改訂記録）", zh:"学习历史（修订记录）"},
+    historySub: {en:"Past sessions — click a row to review that day's material again.", ja:"過去の学習セッション。行をクリックすると内容を再確認できます。", zh:"过往的学习记录——点击某一行可重新查看当天的内容。"},
+    colDate: {en:"Date", ja:"日付", zh:"日期"},
+    colSession: {en:"Session", ja:"回", zh:"场次"},
+    colDomain: {en:"Domain", ja:"領域", zh:"领域"},
+    colTopic: {en:"Topic", ja:"トピック", zh:"主题"},
+    colScore: {en:"Score", ja:"スコア", zh:"得分"},
+    emptyHistory: {en:"No sessions completed yet — take today's test to start your log.", ja:"まだ完了したセッションはありません。今日のテストを受けて記録を始めましょう。", zh:"目前还没有已完成的学习记录——完成今天的测试即可开始记录。"},
+    reviewBanner: {en:"REVIEWING PAST SESSION — read-only", ja:"過去の記録を表示中（閲覧のみ）", zh:"正在查看过往记录（仅供查阅）"},
+    backToToday: {en:"Back to today", ja:"今日に戻る", zh:"返回今天"},
+    yourAnswer: {en:"Your answer", ja:"あなたの回答", zh:"你的答案"},
+    correctAnswer: {en:"Correct answer", ja:"正解", zh:"正确答案"},
+    dbUnavailable: {en:"History can't be saved in this preview — results are shown for this session only.", ja:"このプレビューでは履歴を保存できません。結果は今回の表示のみで確認できます。", zh:"当前预览无法保存历史记录，结果仅在本次查看时显示。"},
+    sourceNote: {
+      en:"Curriculum written from Anthropic's public documentation and engineering posts on agent architecture, tooling, and Claude Code (not a reproduction of the official CCA-F exam blueprint, which Anthropic has not published in detail). Official prep: Anthropic Partner Academy / claude.com.",
+      ja:"本教材はAnthropicの公開ドキュメントおよびエージェントアーキテクチャ・ツール・Claude Codeに関するエンジニアリング記事をもとに作成したものです（Anthropicが詳細を公開していない公式CCA-F試験範囲の再現ではありません）。公式の学習教材はAnthropic Partner Academy／claude.comを参照してください。",
+      zh:"本学习内容基于 Anthropic 公开的文档，以及关于智能体架构、工具设计和 Claude Code 的官方工程博客整理而成（并非官方 CCA-F 考试大纲的还原——Anthropic 尚未公开详细大纲）。官方备考资源请参见 Anthropic Partner Academy / claude.com。"
+    }
+  };
+
+  var TOPICS = [
+    {
+      id: "orchestration",
+      code: "DOM-01",
+      domain: {en:"Agentic Architecture & Orchestration", ja:"エージェントアーキテクチャとオーケストレーション", zh:"智能体架构与编排"},
+      title: {en:"Single-Agent Loops vs. Orchestrator-Worker Patterns", ja:"シングルエージェント・ループとオーケストレーター・ワーカーパターン", zh:"单智能体循环与编排者-工作者模式"},
+      explanation: {
+        en:"An agentic system lets Claude plan, call tools, and act across multiple steps toward a goal, instead of returning one reply. Two common patterns are the single-agent loop (one Claude instance repeatedly reasons, calls a tool, observes the result) and the orchestrator-worker pattern (a lead agent breaks a task into sub-tasks and delegates them to separate subagents, each with its own isolated context). Orchestration adds coordination cost, so architects reserve multi-agent designs for tasks that genuinely parallelize or need isolated context — not as a default.",
+        ja:"エージェント型システムでは、Claude が単発の応答ではなく、計画を立て、ツールを呼び出し、複数ステップにわたって目標達成に向けて行動します。代表的なパターンは、単一のClaudeが「推論→ツール呼び出し→結果観察」を繰り返す「シングルエージェント・ループ」と、リードエージェントがタスクを分割し、それぞれ独立したコンテキストを持つサブエージェントに委譲する「オーケストレーター・ワーカー」パターンです。オーケストレーションには調整コストが伴うため、真に並列化できる、または独立したコンテキストが必要なタスクにのみマルチエージェント設計を採用すべきです。",
+        zh:"智能体系统让 Claude 能够进行规划、调用工具，并围绕一个目标执行多步操作，而不仅仅是给出单次回复。两种常见模式是：单智能体循环（一个 Claude 实例反复进行“推理→调用工具→观察结果”），以及编排者-工作者模式（主智能体将任务拆分为子任务，分派给各自拥有独立上下文的子智能体）。编排会带来协调成本，因此架构师应仅在任务确实可以并行、或需要隔离上下文时才采用多智能体设计，而不是默认使用。"
+      },
+      quiz: [
+        {
+          q: {en:"What is the main architectural reason to split work across multiple subagents rather than one agent?", ja:"1つのエージェントではなく複数のサブエージェントにタスクを分割する主なアーキテクチャ上の理由は？", zh:"将任务拆分给多个子智能体而非单一智能体的主要架构原因是什么？"},
+          options: {
+            en:["It always makes responses faster", "Each subagent can hold its own isolated context, useful for parallelizable or context-heavy subtasks", "It reduces the number of tool calls needed", "It removes the need for a system prompt"],
+            ja:["常に応答が速くなるから", "各サブエージェントが独立したコンテキストを持てるため、並列化可能または文脈量の多いサブタスクに有効", "必要なツール呼び出し回数が減るから", "システムプロンプトが不要になるから"],
+            zh:["总是能让响应更快", "每个子智能体可以拥有独立的上下文，适合可并行或上下文占用大的子任务", "减少所需的工具调用次数", "不再需要系统提示词"]
+          },
+          correct: 1,
+          rationale: {en:"Multi-agent designs trade coordination overhead for isolated context per subagent — valuable when subtasks are independent or would otherwise pollute a shared context window.", ja:"マルチエージェント設計は調整コストと引き換えに、各サブエージェントに独立したコンテキストを持たせられます。サブタスクが独立している、または共有コンテキストを圧迫する場合に有効です。", zh:"多智能体设计以协调开销换取每个子智能体的独立上下文，适用于子任务彼此独立、或会占用共享上下文窗口的场景。"}
+        }
+      ]
+    },
+    {
+      id: "context",
+      code: "DOM-02",
+      domain: {en:"Context Engineering", ja:"コンテキストエンジニアリング", zh:"上下文工程"},
+      title: {en:"Managing the Context Window", ja:"コンテキストウィンドウの管理", zh:"管理上下文窗口"},
+      explanation: {
+        en:"Claude's context window is finite and every token in it competes for the model's attention. Context engineering is the practice of deciding what enters that window: trimming stale tool results, summarizing or 'compacting' long conversation history before it fills the window, and using subagents to keep large intermediate work (like reading many files) out of the main thread's context entirely. Good context engineering keeps the model focused on what matters right now, rather than relying on a bigger window to paper over noisy input.",
+        ja:"Claude のコンテキストウィンドウには限りがあり、その中のすべてのトークンがモデルの注意を奪い合います。コンテキストエンジニアリングとは、何をウィンドウに入れるかを設計する技術です。古くなったツール結果を削除し、会話履歴が長くなる前に要約・圧縮し、大量のファイル読み込みのような中間作業はサブエージェントに任せてメインスレッドのコンテキストを汚さないようにします。優れたコンテキストエンジニアリングは、単に大きなウィンドウに頼るのではなく、今必要な情報にモデルの注意を集中させます。",
+        zh:"Claude 的上下文窗口是有限的，窗口中的每个 token 都在争夺模型的注意力。上下文工程是指有意识地决定哪些内容进入上下文窗口：清理过时的工具调用结果，在对话历史变长之前进行摘要或“压缩”，并利用子智能体把大量中间性工作（如批量读取文件）隔离在主线程上下文之外。好的上下文工程让模型始终聚焦于当前真正重要的信息，而不是单纯依赖更大的窗口来掩盖嘈杂的输入。"
+      },
+      quiz: [
+        {
+          q: {en:"Why might a long-running agent summarize or 'compact' its conversation history mid-task?", ja:"長時間動作するエージェントが、タスクの途中で会話履歴を要約・「圧縮」するのはなぜですか？", zh:"长时间运行的智能体为什么会在任务中途对对话历史进行摘要或“压缩”？"},
+          options: {
+            en:["To make the output longer", "To free up context window space so the model stays focused on current, relevant information", "Because Claude cannot read long text", "To avoid calling any tools"],
+            ja:["出力を長くするため", "コンテキストウィンドウの空きを確保し、モデルが現在の関連情報に集中できるようにするため", "Claude は長いテキストを読めないから", "ツール呼び出しを避けるため"],
+            zh:["为了让输出更长", "释放上下文窗口空间，使模型能专注于当前相关信息", "因为 Claude 无法阅读长文本", "为了避免调用任何工具"]
+          },
+          correct: 1,
+          rationale: {en:"Compaction reclaims context window space for what matters now, since stale history still consumes tokens and attention even when it's no longer directly useful.", ja:"圧縮は、もはや直接必要ではなくなった古い履歴が消費していたトークンと注意力を解放し、今重要な情報のためのコンテキスト領域を確保します。", zh:"压缩可以回收上下文窗口空间，因为已不再直接有用的旧历史仍会占用 token 和注意力，压缩后能为当前重要信息腾出空间。"}
+        },
+        {
+          q: {en:"What is a risk of NOT engineering context on a long agent run?", ja:"長時間のエージェント実行でコンテキストエンジニアリングを行わない場合のリスクは？", zh:"在长时间运行的智能体任务中，如果不进行上下文工程，会有什么风险？"},
+          options: {
+            en:["The agent becomes too fast", "Irrelevant or stale information crowds out what's actually needed, degrading response quality", "The API becomes cheaper", "Tool calls stop working entirely"],
+            ja:["エージェントが速くなりすぎる", "無関係・古い情報が本当に必要な情報を圧迫し、応答品質が低下する", "APIが安くなる", "ツール呼び出しが完全に機能しなくなる"],
+            zh:["智能体会变得过快", "无关或过时的信息会挤占真正需要的信息，导致回答质量下降", "API 会变得更便宜", "工具调用会完全失效"]
+          },
+          correct: 1,
+          rationale: {en:"Without pruning or compaction, accumulated noise competes with relevant signal for the model's limited attention, which can degrade reasoning quality even before the hard token limit is hit.", ja:"刈り込みや圧縮を行わないと、蓄積されたノイズが限られた注意力を巡って関連情報と競合し、トークン上限に達する前でも推論品質が低下する可能性があります。", zh:"如果不进行裁剪或压缩，累积的噪音会与真正相关的信息争夺模型有限的注意力，即使还没达到硬性的 token 上限，推理质量也可能因此下降。"}
+        }
+      ]
+    },
+    {
+      id: "tools-mcp",
+      code: "DOM-03",
+      domain: {en:"Tool & MCP Design", ja:"ツールとMCP設計", zh:"工具与 MCP 设计"},
+      title: {en:"Designing Tools Claude Can Use Well", ja:"Claude が使いやすいツールの設計", zh:"设计 Claude 能用好的工具"},
+      explanation: {
+        en:"Tools are how Claude affects the outside world — each needs a clear name, a description written for the model (not for humans), and a schema that makes valid calls easy and invalid ones hard. The Model Context Protocol (MCP) standardizes how tools and data sources are exposed to any MCP-capable client, so one MCP server can serve tools to multiple agents without custom integration code for each. Good tool design returns errors the model can act on — a message explaining what went wrong — not just a raw failure.",
+        ja:"ツールは Claude が外部世界に働きかける手段です。それぞれに明確な名前、モデル向けに書かれた説明文（人間向けではない）、そして正しい呼び出しをしやすく誤った呼び出しをしにくくするスキーマが必要です。Model Context Protocol（MCP）は、ツールやデータソースを任意のMCP対応クライアントに公開する方法を標準化するもので、1つのMCPサーバーで、個別の統合コードを書かずに複数のエージェントにツールを提供できます。優れたツール設計は、単なる失敗ではなく、モデルが対処できるエラー（何が問題だったかを説明するメッセージ）を返します。",
+        zh:"工具是 Claude 影响外部世界的方式——每个工具都需要清晰的名称、面向模型（而非面向人类）编写的描述，以及让正确调用容易、错误调用困难的参数结构（schema）。模型上下文协议（MCP）将工具和数据源暴露给任意支持 MCP 的客户端的方式标准化，因此一个 MCP 服务器可以为多个智能体提供工具，而无需为每个智能体单独编写集成代码。良好的工具设计返回的是模型可以据以行动的错误信息（说明具体哪里出了问题），而不仅仅是一个原始的失败。"
+      },
+      quiz: [
+        {
+          q: {en:"Who is the primary audience for a tool's description field?", ja:"ツールの description フィールドの主な読者は誰ですか？", zh:"工具的 description 字段主要是写给谁看的？"},
+          options: {
+            en:["The end user reading documentation", "The model deciding when and how to call the tool", "The database administrator", "The billing system"],
+            ja:["ドキュメントを読むエンドユーザー", "ツールをいつどう呼び出すか判断するモデル自身", "データベース管理者", "課金システム"],
+            zh:["阅读文档的最终用户", "决定何时以及如何调用该工具的模型本身", "数据库管理员", "计费系统"]
+          },
+          correct: 1,
+          rationale: {en:"Tool descriptions are prompt content the model reads to decide whether and how to call the tool — write them for that audience, with concrete usage guidance.", ja:"ツールの説明はモデルが読むプロンプトの一部であり、呼び出すかどうか・どう呼び出すかを判断するために使われます。そのため、具体的な使用ガイダンスをモデル向けに書くべきです。", zh:"工具描述是模型会读取的提示词内容，用于判断是否调用以及如何调用该工具，因此应当面向模型撰写具体的使用指引。"}
+        },
+        {
+          q: {en:"What is the main benefit of MCP for tool integration?", ja:"ツール統合におけるMCPの主な利点は？", zh:"MCP 对工具集成的主要好处是什么？"},
+          options: {
+            en:["It makes tools run faster", "It standardizes how tools and data are exposed so one server can serve many different clients and agents", "It replaces the need for a system prompt", "It encrypts all API traffic"],
+            ja:["ツールの実行が速くなる", "ツールやデータの公開方法を標準化し、1つのサーバーを様々なクライアント/エージェントに使い回せる", "システムプロンプトが不要になる", "すべてのAPI通信を暗号化する"],
+            zh:["让工具运行得更快", "将工具和数据的暴露方式标准化，使一个服务器可以服务于多种不同的客户端和智能体", "取代了系统提示词的需求", "加密所有 API 流量"]
+          },
+          correct: 1,
+          rationale: {en:"MCP's value is standardization — a server built once can be reused across any MCP-compatible client without bespoke integration work each time.", ja:"MCPの価値は標準化にあります。一度構築したサーバーを、クライアントごとに個別の統合作業をせずに、あらゆるMCP対応クライアントで再利用できます。", zh:"MCP 的价值在于标准化——一次构建的服务器可以被任何兼容 MCP 的客户端复用，而无需每次都进行定制化集成开发。"}
+        }
+      ]
+    },
+    {
+      id: "prompting",
+      code: "DOM-04",
+      domain: {en:"Prompt Engineering & Structured Output", ja:"プロンプトエンジニアリングと構造化出力", zh:"提示词工程与结构化输出"},
+      title: {en:"Clear Prompts and Machine-Readable Output", ja:"明確なプロンプトと機械可読な出力", zh:"清晰的提示词与可供机器读取的输出"},
+      explanation: {
+        en:"Clear system prompts set role, constraints, and success criteria up front; XML-style tags (like <instructions> or <context>) help Claude reliably separate different kinds of input in a long prompt. For machine-readable output, defining a strict JSON schema — and asking Claude to fill exactly that shape — makes downstream parsing reliable, since the architecture around Claude often needs to feed its output straight into other code without a human reading it first.",
+        ja:"明確なシステムプロンプトは、役割・制約・成功基準を事前に定義します。XML風のタグ（<instructions>や<context>など）を使うと、長いプロンプト内の異なる種類の入力をClaudeが確実に区別できます。機械可読な出力には、厳密なJSONスキーマを定義し、その形式通りに出力させることで、下流の処理が安定します。Claudeの出力は人間が読む前に直接他のコードへ渡されることが多いため、これは重要です。",
+        zh:"清晰的系统提示词会预先设定角色、约束条件和成功标准；XML 风格的标签（如 <instructions> 或 <context>）有助于 Claude 在较长的提示词中可靠地区分不同类型的输入。对于需要机器读取的输出，定义严格的 JSON schema 并要求 Claude 精确按该结构输出，能让下游解析更加可靠——因为围绕 Claude 构建的系统架构常常需要将其输出直接传给其他代码处理，而不经过人工先行阅读。"
+      },
+      quiz: [
+        {
+          q: {en:"Why use XML-style tags like <context> or <instructions> in a prompt?", ja:"プロンプト内で <context> や <instructions> のようなXML風タグを使う理由は？", zh:"为什么要在提示词中使用像 <context> 或 <instructions> 这样的 XML 风格标签？"},
+          options: {
+            en:["They make the response shorter", "They help Claude reliably distinguish different sections of a long, mixed-content prompt", "They are required by the API", "They translate the prompt automatically"],
+            ja:["応答が短くなるから", "長く複数の内容が混在するプロンプトの各セクションをClaudeが確実に区別できるようにするため", "APIの仕様上必須だから", "プロンプトを自動翻訳するため"],
+            zh:["能让回答变短", "有助于 Claude 在内容混杂的长提示词中可靠地区分不同部分", "API 强制要求使用", "能自动翻译提示词"]
+          },
+          correct: 1,
+          rationale: {en:"Tags act as structural signposts, letting Claude parse which part of the prompt is instructions, which is reference material, and which is user input.", ja:"タグは構造上の目印として機能し、プロンプトのどの部分が指示で、どの部分が参考資料で、どの部分がユーザー入力かをClaudeが解析しやすくなります。", zh:"标签起到结构性路标的作用，帮助 Claude 解析提示词中哪部分是指令、哪部分是参考资料、哪部分是用户输入。"}
+        },
+        {
+          q: {en:"In an architecture where Claude's output feeds directly into another program, what should the prompt specify?", ja:"Claude の出力が別のプログラムに直接渡されるアーキテクチャでは、プロンプトで何を指定すべきですか？", zh:"在 Claude 的输出会直接传给另一个程序处理的架构中，提示词应当明确规定什么？"},
+          options: {
+            en:["Nothing extra — free text is fine", "A strict output schema (e.g. exact JSON structure) so downstream code can parse it reliably", "A request for the answer in multiple languages", "A longer system prompt only"],
+            ja:["特に何もしなくてよい、自由記述でよい", "下流のコードが確実に解析できるよう、厳密な出力スキーマ（正確なJSON構造など）を指定する", "複数言語での回答を要求する", "システムプロンプトを長くするだけでよい"],
+            zh:["不需要额外规定，自由文本即可", "严格的输出 schema（例如精确的 JSON 结构），以便下游代码可靠解析", "要求用多种语言回答", "只需要写更长的系统提示词"]
+          },
+          correct: 1,
+          rationale: {en:"When code, not a human, consumes the output, an enforced schema removes ambiguity and prevents parsing failures downstream.", ja:"出力を消費するのが人間ではなくコードである場合、厳密なスキーマを強制することで曖昧さがなくなり、下流での解析失敗を防げます。", zh:"当输出的消费者是代码而非人类时，强制使用固定 schema 可以消除歧义，防止下游解析出错。"}
+        }
+      ]
+    },
+    {
+      id: "evals",
+      code: "DOM-05",
+      domain: {en:"Evaluation & Observability", ja:"評価と可観測性", zh:"评估与可观测性"},
+      title: {en:"Measuring Whether an Agent Actually Works", ja:"エージェントが実際に機能しているかを測定する", zh:"衡量智能体是否真正有效"},
+      explanation: {
+        en:"Before shipping an agent to production, architects need a way to measure whether it actually works: a set of representative tasks with known-good outcomes (an eval set), scored automatically or by an LLM-as-judge. Observability extends this into production — logging tool calls, decisions, and failures so a regression can be traced back to a specific prompt change, tool update, or model version, rather than diagnosed by guesswork.",
+        ja:"エージェントを本番環境にリリースする前に、それが実際に機能しているかを測定する方法が必要です。既知の正解を持つ代表的なタスク集合（評価セット）を用意し、自動採点またはLLM-as-judge（LLMによる採点）でスコアリングします。可観測性はこれを本番環境にまで拡張するもので、ツール呼び出し・判断・失敗をログに残すことで、回帰（不具合の再発）が特定のプロンプト変更、ツール更新、モデルバージョンのどれに起因するかを、推測ではなく追跡できるようにします。",
+        zh:"在将智能体投入生产环境之前，架构师需要有办法衡量它是否真正有效：准备一组具有已知正确结果的代表性任务（评估集），通过自动评分或“LLM 作为评判者”的方式打分。可观测性则将这一实践延伸到生产环境中——记录工具调用、决策过程和失败情况，使某次回归问题可以被追溯到具体的某次提示词修改、工具更新或模型版本变化，而不是靠猜测来诊断。"
+      },
+      quiz: [
+        {
+          q: {en:"What is an 'eval set' used for in agent development?", ja:"エージェント開発における「評価セット（eval set）」とは何のために使われますか？", zh:"在智能体开发中，“评估集（eval set）”的作用是什么？"},
+          options: {
+            en:["Storing user passwords", "A collection of representative tasks with known-good outcomes, used to measure whether the agent actually works", "Formatting the final UI", "Compressing the context window"],
+            ja:["ユーザーのパスワードを保存するため", "既知の正解を持つ代表的なタスク集合で、エージェントが実際に機能するかを測定するために使う", "最終的なUIを整形するため", "コンテキストウィンドウを圧縮するため"],
+            zh:["存储用户密码", "一组具有已知正确结果的代表性任务，用于衡量智能体是否真正有效", "用于格式化最终界面", "用于压缩上下文窗口"]
+          },
+          correct: 1,
+          rationale: {en:"Evals give architects an objective, repeatable way to check agent quality before and after changes, instead of relying on spot-checking.", ja:"評価セットは、その場しのぎの確認に頼るのではなく、変更の前後でエージェントの品質を客観的かつ再現可能な方法でチェックする手段を提供します。", zh:"评估集为架构师提供了一种客观、可重复的方式，在变更前后检验智能体质量，而不必依赖临时抽查。"}
+        },
+        {
+          q: {en:"Why does production observability (logging tool calls and decisions) matter for an agent architecture?", ja:"エージェントアーキテクチャにおいて、本番環境の可観測性（ツール呼び出しや判断のログ記録）が重要な理由は？", zh:"对于智能体架构而言，生产环境的可观测性（记录工具调用与决策）为何重要？"},
+          options: {
+            en:["It makes the agent respond faster", "It lets a regression be traced back to a specific change (prompt, tool, or model version) instead of guessed at", "It is required to call any tool", "It reduces the token count of prompts"],
+            ja:["エージェントの応答が速くなるから", "回帰の原因を、推測ではなく特定の変更（プロンプト・ツール・モデルバージョン）まで追跡できるようにするため", "ツールを呼び出すために必須だから", "プロンプトのトークン数を減らすため"],
+            zh:["能让智能体响应更快", "使回归问题能够追溯到具体的某次变更（提示词、工具或模型版本），而不是靠猜测", "这是调用任何工具的必要条件", "能减少提示词的 token 数量"]
+          },
+          correct: 1,
+          rationale: {en:"Detailed logs turn 'something broke' into 'this specific change broke this specific behavior,' which is what makes production agents maintainable.", ja:"詳細なログがあれば、「何かが壊れた」ではなく「このプロンプト変更がこの挙動を壊した」と特定でき、本番エージェントの保守性を高めます。", zh:"“出问题了”变成“是这次具体的变更导致了这个具体的行为异常”，这正是让生产环境中的智能体可维护的关键。"}
+        }
+      ]
+    },
+    {
+      id: "safety",
+      code: "DOM-06",
+      domain: {en:"Safety, Permissions & Human-in-the-Loop", ja:"安全性・権限管理・人間の関与", zh:"安全性、权限与人工介入"},
+      title: {en:"Designing for What Happens When the Agent Is Wrong", ja:"エージェントが間違えた場合を想定した設計", zh:"为智能体出错时的情况做设计"},
+      explanation: {
+        en:"Giving an agent the ability to act (write files, run commands, spend money) means designing for what happens when it's wrong. Permission modes gate risky actions behind explicit approval; sandboxing limits the blast radius of a mistake (a contained environment instead of direct production access); and human-in-the-loop checkpoints keep an irreversible or high-stakes action in front of a person before it executes. A production-grade architecture treats these as design decisions, not afterthoughts bolted on after an incident.",
+        ja:"エージェントに行動する能力（ファイル書き込み、コマンド実行、支払いなど）を与えるということは、それが間違った場合に何が起こるかを設計することでもあります。権限モードはリスクの高い操作を明示的な承認の背後に置き、サンドボックス化は失敗の影響範囲を限定し（本番環境への直接アクセスではなく隔離環境にする）、人間の関与によるチェックポイントは、不可逆的あるいはリスクの高い操作が実行される前に人間の目を通すようにします。本番品質のアーキテクチャでは、これらはインシデント後に取って付けるものではなく、最初からの設計判断として扱われます。",
+        zh:"赋予智能体行动能力（写文件、执行命令、花钱）意味着必须设计好它出错时会发生什么。权限模式将高风险操作置于需要明确批准之后；沙箱化限制了出错时的影响范围（将其限制在隔离环境中，而非直接触及生产环境）；人工介入检查点则确保不可逆或高风险的操作在执行前会经过人的确认。生产级架构应当从一开始就把这些当作设计决策，而不是事故发生后才补上的措施。"
+      },
+      quiz: [
+        {
+          q: {en:"Why sandbox an agent instead of giving it direct production access?", ja:"エージェントに本番環境への直接アクセスを与えるのではなく、サンドボックス化する理由は？", zh:"为什么要将智能体置于沙箱中，而不是直接给予生产环境访问权限？"},
+          options: {
+            en:["Sandboxing makes the agent smarter", "It limits the blast radius if the agent takes a wrong or unintended action", "It is required for every API call", "It speeds up tool execution"],
+            ja:["サンドボックス化するとエージェントが賢くなるから", "エージェントが誤った、または意図しない行動を取った場合の影響範囲を限定できるから", "すべてのAPI呼び出しに必須だから", "ツールの実行が速くなるから"],
+            zh:["沙箱化会让智能体变得更聪明", "能限制智能体做出错误或意外操作时造成的影响范围", "这是所有 API 调用的必要条件", "能加快工具执行速度"]
+          },
+          correct: 1,
+          rationale: {en:"A sandbox contains the consequences of a mistake to a safe, reversible environment instead of letting it reach production directly.", ja:"サンドボックスは、誤った操作の影響を安全で取り消し可能な環境内に封じ込め、本番環境に直接及ばないようにします。", zh:"沙箱能将错误操作的后果限制在一个安全、可撤销的环境中，而不会直接波及生产环境。"}
+        },
+        {
+          q: {en:"What is the purpose of a human-in-the-loop checkpoint in an agent workflow?", ja:"エージェントのワークフローにおける人間の関与（human-in-the-loop）チェックポイントの目的は？", zh:"智能体工作流中设置人工介入检查点的目的是什么？"},
+          options: {
+            en:["To slow the agent down for no reason", "To keep a person in the decision path before an irreversible or high-stakes action executes", "To translate the agent's output", "To reduce API costs"],
+            ja:["理由もなくエージェントを遅くするため", "不可逆的あるいはリスクの高い操作が実行される前に、人間を意思決定プロセスに残すため", "エージェントの出力を翻訳するため", "APIコストを削減するため"],
+            zh:["无缘无故让智能体变慢", "在不可逆或高风险操作执行之前，让人始终处于决策路径中", "用于翻译智能体的输出", "用于降低 API 成本"]
+          },
+          correct: 1,
+          rationale: {en:"Human-in-the-loop checkpoints exist specifically for actions where being wrong is costly or unrecoverable — the architecture keeps a person in that specific decision path.", ja:"人間の関与によるチェックポイントは、間違えた場合のコストが高い、あるいは取り返しがつかない操作のために特に存在し、その特定の意思決定プロセスに人間を関与させ続けます。", zh:"人工介入检查点专门针对那些出错代价高昂或无法挽回的操作而设置，其架构目的就是让人始终留在这一特定决策环节中。"}
+        }
+      ]
+    },
+    {
+      id: "rag",
+      code: "DOM-07",
+      domain: {en:"Retrieval Architecture", ja:"検索アーキテクチャ", zh:"检索架构"},
+      title: {en:"RAG vs. Long Context", ja:"RAG（検索拡張生成）とロングコンテキスト", zh:"RAG（检索增强生成）与长上下文"},
+      explanation: {
+        en:"Retrieval-Augmented Generation (RAG) fetches only the most relevant chunks of a large knowledge base into the prompt at query time, keeping the context window small and cost predictable — well suited to huge, frequently-changing corpora. Putting everything directly in a long context window instead avoids retrieval errors (nothing relevant gets missed by a bad search) and can be simpler to reason about, but costs more per call and scales worse as the corpus grows. Many production architectures combine both: retrieval to narrow candidates, long context to reason over what's retrieved.",
+        ja:"検索拡張生成（RAG）は、クエリの時点で大規模な知識ベースから最も関連性の高い部分だけをプロンプトに取り込み、コンテキストウィンドウを小さく保ちコストを予測可能にします。巨大で頻繁に更新されるコーパスに適しています。一方、すべてを直接ロングコンテキストウィンドウに入れる方法は、検索漏れ（検索精度が低くて関連情報が抜け落ちるリスク）を回避でき、扱いもシンプルになりますが、呼び出しごとのコストが増え、コーパスが大きくなるほどスケールしにくくなります。多くの本番アーキテクチャは両方を組み合わせます — 検索で候補を絞り込み、ロングコンテキストでその内容を推論します。",
+        zh:"检索增强生成（RAG）在查询时只将大型知识库中最相关的片段取入提示词，从而让上下文窗口保持较小、成本可预测，非常适合规模庞大且频繁更新的语料库。而直接把所有内容放入长上下文窗口则可以避免检索遗漏（不会因为搜索效果不佳而漏掉相关信息），推理逻辑也更简单，但每次调用成本更高，且随着语料库增大扩展性变差。许多生产架构会将两者结合：先用检索缩小候选范围，再用长上下文对检索结果进行推理。"
+      },
+      quiz: [
+        {
+          q: {en:"When is RAG typically preferred over stuffing everything into a long context window?", ja:"すべてをロングコンテキストウィンドウに詰め込むより、RAGが一般的に好まれるのはどのような場合ですか？", zh:"相比把所有内容都塞进长上下文窗口，通常什么情况下更适合使用 RAG？"},
+          options: {
+            en:["When the knowledge base is small and fits easily in context", "When the corpus is large and/or changes frequently, so pulling only relevant chunks keeps cost and context size manageable", "When no external documents are needed at all", "When output must be in JSON"],
+            ja:["知識ベースが小さく、簡単にコンテキストに収まる場合", "コーパスが大きい、または頻繁に更新される場合。関連部分だけを取り込むことでコストとコンテキストサイズを管理しやすくなる", "外部文書が全く必要ない場合", "出力をJSON形式にする必要がある場合"],
+            zh:["知识库很小，很容易放入上下文中", "语料库很大且/或经常变化，只取相关片段能让成本和上下文规模保持可控", "完全不需要任何外部文档", "输出必须是 JSON 格式"]
+          },
+          correct: 1,
+          rationale: {en:"RAG's advantage grows with corpus size and change frequency — retrieval keeps only what's relevant in context instead of paying to include everything every time.", ja:"RAGの利点はコーパスが大きく更新頻度が高いほど大きくなります。毎回すべてを含めるコストを払う代わりに、検索で本当に関連する部分だけをコンテキストに残せます。", zh:"RAG 的优势会随着语料库规模和更新频率的增加而增大——检索只把真正相关的内容留在上下文中，而不必每次都为包含全部内容付出成本。"}
+        },
+        {
+          q: {en:"What is a downside of relying purely on RAG instead of long context?", ja:"ロングコンテキストではなく純粋にRAGに頼る場合のデメリットは？", zh:"完全依赖 RAG 而非长上下文的缺点是什么？"},
+          options: {
+            en:["It always costs more per call than long context", "A retrieval miss can leave relevant information out of the prompt entirely, even if it exists in the knowledge base", "It cannot be combined with tool use", "It requires no infrastructure"],
+            ja:["ロングコンテキストより常に呼び出しごとのコストが高くなる", "検索が外れると、知識ベースに存在していても関連情報がプロンプトに全く含まれなくなる", "ツール使用と組み合わせられない", "インフラが一切不要になる"],
+            zh:["每次调用的成本总是比长上下文更高", "一旦检索失败，相关信息即使存在于知识库中，也可能完全不会出现在提示词里", "无法与工具调用结合使用", "完全不需要任何基础设施"]
+          },
+          correct: 1,
+          rationale: {en:"RAG is only as good as its retrieval step — if the search doesn't surface the right chunk, the model never sees it, regardless of how good its reasoning is.", ja:"RAGの質は検索ステップの精度に依存します。検索が適切なチャンクを見つけられなければ、モデルの推論能力に関わらずその情報は一切見えません。", zh:"RAG 的效果完全取决于检索这一步——如果搜索没能召回正确的片段，无论模型推理能力多强，它都看不到那部分信息。"}
+        }
+      ]
+    },
+    {
+      id: "cost",
+      code: "DOM-08",
+      domain: {en:"Model Selection & Cost/Latency Strategy", ja:"モデル選択とコスト・レイテンシ戦略", zh:"模型选择与成本/延迟策略"},
+      title: {en:"Routing Tasks Across Model Tiers", ja:"タスクをモデル階層に振り分ける", zh:"在不同模型档位间路由任务"},
+      explanation: {
+        en:"Not every step in an agentic system needs the most capable model. Architects route cheap, high-volume, or latency-sensitive subtasks (classification, simple extraction) to a smaller, faster model tier, and reserve the most capable tier for steps that genuinely need deep reasoning (planning, complex synthesis). Prompt caching — reusing a previously-processed prefix of a prompt instead of reprocessing it — is another lever: it cuts cost and latency for prompts that repeat a large, stable prefix (like a long system prompt or document) across many calls.",
+        ja:"エージェントシステムのすべてのステップに、最も高性能なモデルが必要なわけではありません。アーキテクトは、安価で大量、あるいはレイテンシに敏感なサブタスク（分類や単純な抽出など）を小型・高速なモデルに振り分け、真に深い推論を必要とするステップ（計画立案や複雑な統合など）には最も高性能なモデルを温存します。プロンプトキャッシュ（以前処理済みのプロンプトの接頭辞を再処理せずに再利用すること）も重要な手段です。長いシステムプロンプトや文書のような大きく安定した接頭辞を多数の呼び出しで繰り返し使う場合、コストとレイテンシを削減できます。",
+        zh:"并非智能体系统中的每一步都需要用最强的模型。架构师会将低成本、高频率或对延迟敏感的子任务（如分类、简单信息抽取）路由给更小、更快的模型档位，而将最强档位留给真正需要深度推理的步骤（如规划、复杂综合分析）。提示词缓存（复用之前已处理过的提示词前缀，而不是重新处理）是另一个重要手段：当多次调用中重复出现一段较大且稳定的前缀（比如很长的系统提示词或文档）时，它能显著降低成本和延迟。"
+      },
+      quiz: [
+        {
+          q: {en:"What is a good candidate task to route to a smaller, faster model tier instead of the most capable one?", ja:"最も高性能なモデルではなく、より小型・高速なモデル階層に振り分けるのに適したタスクは？", zh:"什么样的任务适合路由到更小、更快的模型档位，而不是最强的档位？"},
+          options: {
+            en:["Complex multi-step planning", "A high-volume, simple task like basic classification or extraction", "Novel research synthesis", "Anything involving tool use"],
+            ja:["複雑な多段階の計画立案", "基本的な分類や抽出のような、高頻度でシンプルなタスク", "新規性の高いリサーチの統合", "ツール使用を伴うすべてのタスク"],
+            zh:["复杂的多步骤规划", "高频率的简单任务，例如基本分类或信息抽取", "具有新颖性的研究综合分析", "任何涉及工具调用的任务"]
+          },
+          correct: 1,
+          rationale: {en:"Routing by task difficulty saves cost and latency on high-volume simple work while reserving the most capable tier for genuinely hard reasoning steps.", ja:"タスクの難易度に応じて振り分けることで、高頻度なシンプル作業のコスト・レイテンシを抑えつつ、本当に難しい推論ステップには最も高性能な階層を温存できます。", zh:"按任务难度分流，可以在高频简单工作上节省成本和延迟，同时把最强档位留给真正需要深度推理的步骤。"}
+        },
+        {
+          q: {en:"What does prompt caching primarily save on, and when is it most effective?", ja:"プロンプトキャッシュは主に何を節約し、どのような場合に最も効果的ですか？", zh:"提示词缓存主要节省的是什么？在什么情况下最有效？"},
+          options: {
+            en:["It saves storage space on the user's device", "It saves cost and latency by reusing a previously-processed stable prompt prefix across many calls", "It saves on the number of tools an agent can use", "It only helps with a single one-off call"],
+            ja:["ユーザーのデバイスのストレージ容量を節約する", "多数の呼び出しにわたって安定した接頭辞を再利用することで、コストとレイテンシを節約する", "エージェントが使用できるツールの数を節約する", "一度きりの呼び出しにのみ有効である"],
+            zh:["节省用户设备上的存储空间", "通过在多次调用中复用之前已处理过的稳定前缀，节省成本和延迟", "节省智能体可使用的工具数量", "只对一次性的单次调用有帮助"]
+          },
+          correct: 1,
+          rationale: {en:"Caching pays off when a large, stable prefix (system prompt, long document) repeats across many calls — the model doesn't have to reprocess it each time.", ja:"キャッシュは、大きく安定した接頭辞（システムプロンプトや長い文書など）が多数の呼び出しにわたって繰り返される場合に効果を発揮します。モデルはそれを毎回再処理する必要がなくなります。", zh:"当一段较大且稳定的前缀（如系统提示词或长文档）在多次调用中重复出现时，缓存的效果最好——模型无需每次都重新处理这段内容。"}
+        }
+      ]
+    }
+  ];
+
+  var EPOCH = new Date(2026, 8, 14); // 2026-09-14, local
+  function dayIndex() {
+    var now = new Date();
+    var d0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    return Math.floor((d0 - EPOCH) / 86400000);
+  }
+  function todayStr() {
+    var d = new Date();
+    var m = String(d.getMonth()+1).padStart(2,'0');
+    var day = String(d.getDate()).padStart(2,'0');
+    return d.getFullYear() + "-" + m + "-" + day;
+  }
+  function topicFor(slot) {
+    var n = TOPICS.length;
+    var idx = (((dayIndex()*2 + slot) % n) + n) % n;
+    return TOPICS[idx];
+  }
+  function fmtDate(iso) {
+    try {
+      var d = new Date(iso);
+      return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,'0') + "-" + String(d.getDate()).padStart(2,'0');
+    } catch(e) { return iso; }
+  }
+
+  var state = {
+    lang: "ja",
+    db: null,
+    dbTried: false,
+    history: [],
+    quiz: { am: {active:false, selected:{}, submitted:false}, pm: {active:false, selected:{}, submitted:false} },
+    viewingHistoryId: null
+  };
+
+  function t(obj) { return obj[state.lang]; }
+  function langAttr() { return state.lang === "ja" ? "lang-ja" : (state.lang === "zh" ? "lang-zh" : ""); }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+
+  function setLang(l) { state.lang = l; render(); }
+  window.setLang = setLang;
+
+  function startQuiz(slot) {
+    state.quiz[slot] = {active:true, selected:{}, submitted:false};
+    render();
+  }
+  window.startQuiz = startQuiz;
+
+  function selectAnswer(slot, qi, oi) {
+    if (state.quiz[slot].submitted) return;
+    state.quiz[slot].selected[qi] = oi;
+    render();
+  }
+  window.selectAnswer = selectAnswer;
+
+  function closeQuiz(slot) {
+    state.quiz[slot].active = false;
+    render();
+  }
+  window.closeQuiz = closeQuiz;
+
+  function submitQuiz(slot) {
+    var topic = topicFor(slot === "am" ? 0 : 1);
+    var q = state.quiz[slot];
+    var total = topic.quiz.length;
+    var answered = Object.keys(q.selected).length;
+    if (answered < total) return;
+    var score = 0;
+    topic.quiz.forEach(function(item, i){ if (q.selected[i] === item.correct) score++; });
+    q.submitted = true;
+    q.score = score;
+    q.total = total;
+
+    var docId = todayStr() + "-" + slot;
+    if (state.db) {
+      state.db.doc("sessions/" + docId).set({
+        topicId: topic.id,
+        domain: topic.domain.en,
+        title: topic.title.en,
+        session: slot,
+        score: score,
+        total: total,
+        completedAt: new Date().toISOString()
+      }).catch(function(e){ console.error("save failed", e); });
+    }
+    render();
+  }
+  window.submitQuiz = submitQuiz;
+
+  function viewHistory(id) {
+    state.viewingHistoryId = id;
+    render();
+  }
+  window.viewHistory = viewHistory;
+
+  function backToToday() {
+    state.viewingHistoryId = null;
+    render();
+  }
+  window.backToToday = backToToday;
+
+  function sessionCard(slot) {
+    var topic = topicFor(slot === "am" ? 0 : 1);
+    var q = state.quiz[slot];
+    var docId = todayStr() + "-" + slot;
+    var histEntry = state.history.find(function(h){ return h.id === docId; });
+    var isCurrent = (function(){
+      var h = new Date().getHours();
+      return slot === "am" ? h < 20 : h >= 20;
+    })();
+
+    var html = '<div class="session-card' + (isCurrent ? ' current' : '') + '" ' + langAttr() + '>';
+    html += '<div class="session-head">';
+    html += '<span class="session-time"><span class="dial ' + slot + '"></span>' + t(slot === "am" ? LABELS.amLabel : LABELS.pmLabel) + '</span>';
+    html += '<span class="domain-code">' + topic.code + '</span>';
+    html += '</div>';
+    html += '<p class="domain-label">' + escapeHtml(t(topic.domain)) + '</p>';
+    html += '<h2>' + escapeHtml(t(topic.title)) + '</h2>';
+    html += '<p class="explanation">' + escapeHtml(t(topic.explanation)) + '</p>';
+
+    if (histEntry && !q.active) {
+      html += '<span class="status-chip done">✓ ' + t(LABELS.done) + ' · ' + histEntry.score + '/' + histEntry.total + '</span> ';
+      html += '<button class="btn secondary" style="margin-left:8px" onclick="startQuiz(\'' + slot + '\')">' + t(LABELS.retake) + '</button>';
+    } else if (!q.active) {
+      html += '<span class="status-chip pending">' + t(LABELS.notStarted) + '</span> ';
+      html += '<button class="btn" style="margin-left:8px" onclick="startQuiz(\'' + slot + '\')">' + t(LABELS.startTest) + '</button>';
+    }
+
+    if (q.active) {
+      html += '<div class="quiz">';
+      topic.quiz.forEach(function(item, qi){
+        html += '<div class="quiz-q">';
+        html += '<p class="qtext">' + (qi+1) + '. ' + escapeHtml(t(item.q)) + '</p>';
+        t(item.options).forEach(function(opt, oi){
+          var cls = "quiz-opt";
+          if (q.submitted) {
+            if (oi === item.correct) cls += " correct";
+            else if (q.selected[qi] === oi) cls += " incorrect";
+          }
+          html += '<label class="' + cls + '">';
+          html += '<input type="radio" name="q_' + slot + '_' + qi + '" ' + (q.selected[qi]===oi?'checked':'') + (q.submitted?' disabled':'') + ' onclick="selectAnswer(\'' + slot + '\',' + qi + ',' + oi + ')">';
+          html += '<span>' + escapeHtml(opt) + '</span></label>';
+        });
+        if (q.submitted) {
+          html += '<p class="rationale">' + escapeHtml(t(item.rationale)) + '</p>';
+        }
+        html += '</div>';
+      });
+
+      if (q.submitted) {
+        var pct = q.score / q.total;
+        html += '<div class="score-stamp' + (pct < 0.5 ? ' low' : '') + '">' + q.score + ' / ' + q.total + '</div><br>';
+        html += '<button class="btn secondary" onclick="closeQuiz(\'' + slot + '\')">' + t(LABELS.hideQuiz) + '</button>';
+      } else {
+        var allAnswered = Object.keys(q.selected).length >= topic.quiz.length;
+        html += '<button class="btn" ' + (allAnswered?'':'disabled') + ' onclick="submitQuiz(\'' + slot + '\')">' + t(LABELS.submit) + '</button> ';
+        html += '<button class="btn secondary" onclick="closeQuiz(\'' + slot + '\')">' + t(LABELS.hideQuiz) + '</button>';
+      }
+      html += '</div>';
+    }
+
+    html += '</div>';
+    return html;
+  }
+
+  function historyReviewCard(entry) {
+    var topic = TOPICS.find(function(tp){ return tp.id === entry.topicId; }) || TOPICS[0];
+    var html = '<div class="session-card" ' + langAttr() + '>';
+    html += '<div class="review-banner"><span>' + t(LABELS.reviewBanner) + '</span><button onclick="backToToday()">' + t(LABELS.backToToday) + '</button></div>';
+    html += '<div class="session-head">';
+    html += '<span class="session-time">' + fmtDate(entry.completedAt) + ' · ' + entry.session.toUpperCase() + '</span>';
+    html += '<span class="domain-code">' + topic.code + '</span>';
+    html += '</div>';
+    html += '<p class="domain-label">' + escapeHtml(t(topic.domain)) + '</p>';
+    html += '<h2>' + escapeHtml(t(topic.title)) + '</h2>';
+    html += '<p class="explanation">' + escapeHtml(t(topic.explanation)) + '</p>';
+    html += '<span class="status-chip done">✓ ' + t(LABELS.done) + ' · ' + entry.score + '/' + entry.total + '</span>';
+    html += '<div class="quiz">';
+    topic.quiz.forEach(function(item, qi){
+      html += '<div class="quiz-q"><p class="qtext">' + (qi+1) + '. ' + escapeHtml(t(item.q)) + '</p>';
+      html += '<p class="rationale" style="margin-left:0">' + escapeHtml(t(LABELS.correctAnswer)) + ': ' + escapeHtml(t(item.options)[item.correct]) + '</p>';
+      html += '<p class="rationale" style="margin-left:0">' + escapeHtml(t(item.rationale)) + '</p></div>';
+    });
+    html += '</div></div>';
+    return html;
+  }
+
+  function historyTable() {
+    var html = '<div class="history-block" ' + langAttr() + '>';
+    html += '<h2>' + t(LABELS.historyTitle) + '</h2>';
+    html += '<p class="sub">' + t(LABELS.historySub) + '</p>';
+    if (!state.history.length) {
+      html += '<p class="empty-history">' + t(LABELS.emptyHistory) + '</p>';
+    } else {
+      html += '<div class="history-table-wrap"><table class="history-table"><thead><tr>';
+      html += '<th>' + t(LABELS.colDate) + '</th><th>' + t(LABELS.colSession) + '</th><th>' + t(LABELS.colDomain) + '</th><th>' + t(LABELS.colTopic) + '</th><th>' + t(LABELS.colScore) + '</th>';
+      html += '</tr></thead><tbody>';
+      state.history.forEach(function(h){
+        var topic = TOPICS.find(function(tp){ return tp.id === h.topicId; });
+        html += '<tr class="clickable" onclick="viewHistory(\'' + h.id + '\')">';
+        html += '<td>' + fmtDate(h.completedAt) + '</td>';
+        html += '<td>' + h.session.toUpperCase() + '</td>';
+        html += '<td>' + (topic ? escapeHtml(t(topic.domain)) : escapeHtml(h.domain||"")) + '</td>';
+        html += '<td>' + (topic ? escapeHtml(t(topic.title)) : escapeHtml(h.title||"")) + '</td>';
+        html += '<td>' + h.score + '/' + h.total + '</td>';
+        html += '</tr>';
+      });
+      html += '</tbody></table></div>';
+    }
+    if (state.dbTried && !state.db) {
+      html += '<p class="empty-history" style="margin-top:10px">' + t(LABELS.dbUnavailable) + '</p>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function render() {
+    var app = document.getElementById("app");
+    var d = new Date();
+    var dateStr = d.toLocaleDateString(state.lang === "ja" ? "ja-JP" : (state.lang === "zh" ? "zh-CN" : "en-US"), {year:'numeric', month:'long', day:'numeric', weekday:'short'});
+    var cycle = "Day " + (((dayIndex() % TOPICS.length) + TOPICS.length) % TOPICS.length + 1) + " / " + TOPICS.length;
+
+    var html = '';
+    html += '<div class="titleblock" ' + langAttr() + '>';
+    html += '<div><h1>' + t(LABELS.appTitle) + '</h1><p class="sub">' + t(LABELS.appSub) + '</p></div>';
+    html += '<div class="scale-select">';
+    ["en","ja","zh"].forEach(function(l){
+      var label = l === "en" ? "EN" : (l === "ja" ? "日本語" : "中文");
+      html += '<button class="' + (state.lang===l?'active':'') + '" onclick="setLang(\'' + l + '\')">' + label + '</button>';
+    });
+    html += '</div>';
+    html += '<div class="meta-row"><span>' + t(LABELS.dateLabel) + ': <b>' + dateStr + '</b></span><span>' + t(LABELS.cycleLabel) + ': <b>' + cycle + '</b></span><span>' + t(LABELS.sheetLabel) + ': <b>1 / 1</b></span></div>';
+    html += '</div>';
+
+    if (state.viewingHistoryId) {
+      var entry = state.history.find(function(h){ return h.id === state.viewingHistoryId; });
+      if (entry) {
+        html += historyReviewCard(entry);
+      }
+    } else {
+      html += '<div class="sessions">' + sessionCard("am") + sessionCard("pm") + '</div>';
+    }
+
+    html += historyTable();
+
+    html += '<p class="footnote" ' + langAttr() + '>' + escapeHtml(t(LABELS.sourceNote)) + '</p>';
+
+    app.innerHTML = html;
+  }
+
+  render();
+
+  if (window.claude && window.claude.use) {
+    window.claude.use("db").then(function(db){
+      state.dbTried = true;
+      if (!db) { render(); return; }
+      state.db = db;
+      db.collection("sessions").orderBy("completedAt","desc").limit(30).onSnapshot(function(snap){
+        state.history = snap.docs.map(function(doc){
+          var data = doc.data() || {};
+          return Object.assign({id: doc.id}, data);
+        });
+        render();
+      }, function(err){ console.error("history subscribe failed", err); });
+    }).catch(function(e){ state.dbTried = true; render(); });
+  } else {
+    state.dbTried = true;
+  }
+})();
+</script>
+</body>
+</html>
