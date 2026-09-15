@@ -53,12 +53,31 @@
   .card li { margin-bottom: 8px; line-height: 1.5; }
   .weather-row { display: flex; align-items: baseline; gap: 16px; }
   .weather-row .temp { font-size: 32px; font-weight: 600; }
+  .weather-row .note { color: var(--muted); font-size: 13px; }
   .placeholder-note {
     font-size: 13px;
     color: var(--muted);
     margin-top: 32px;
     text-align: center;
   }
+  .history { margin-top: 36px; }
+  .history h2 {
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    margin: 0 0 12px;
+  }
+  .history-item {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 10px;
+  }
+  .history-item .h-date { font-size: 13px; color: var(--accent); font-weight: 600; margin-bottom: 6px; }
+  .history-item .h-weather { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .history-item ul { margin: 0; padding-left: 18px; font-size: 13px; }
+  .history-item li { margin-bottom: 4px; line-height: 1.4; }
 </style>
 </head>
 <body>
@@ -71,26 +90,32 @@
     <div class="card">
       <h2>Weather — 柏市 (Kashiwa, Chiba)</h2>
       <div class="weather-row">
-        <span class="temp">--°C</span>
-        <span>天気情報は毎朝 8:00 に自動更新されます</span>
+        <span class="temp" id="weather-temp">--°C</span>
+        <span id="weather-text">天気情報は毎朝 6:00 に自動更新されます</span>
       </div>
+      <div class="note" id="weather-note"></div>
     </div>
 
     <div class="card">
       <h2>Top News</h2>
-      <ul>
+      <ul id="news-list">
         <li>最新のニュース項目はここに表示されます。</li>
       </ul>
     </div>
 
     <div class="card">
       <h2>AI / Tech Industry Watch</h2>
-      <ul>
+      <ul id="ai-list">
         <li>AI・テック業界の最新動向はここに表示されます。</li>
       </ul>
     </div>
 
-    <p class="placeholder-note">
+    <div class="history" id="history-section" hidden>
+      <h2>過去3日間</h2>
+      <div id="history-list"></div>
+    </div>
+
+    <p class="placeholder-note" id="placeholder-note">
       このページは Daily Briefing ルーティン用の表示テンプレートです。<br>
       現在はサンプル表示です — 実際のブリーフィング内容と連携するには追加設定が必要です。
     </p>
@@ -100,6 +125,71 @@
     document.getElementById('today').textContent = new Date().toLocaleDateString('ja-JP', {
       year: 'numeric', month: 'long', day: 'numeric', weekday: 'long'
     });
+
+    function formatDate(iso) {
+      var d = new Date(iso + 'T00:00:00+09:00');
+      return d.toLocaleDateString('ja-JP', { month: 'long', day: 'numeric', weekday: 'short' });
+    }
+
+    function renderList(el, items) {
+      el.innerHTML = '';
+      (items || []).forEach(function (item) {
+        var li = document.createElement('li');
+        li.textContent = item;
+        el.appendChild(li);
+      });
+    }
+
+    function renderToday(entry) {
+      document.getElementById('weather-temp').textContent =
+        (entry.weather.high != null ? entry.weather.high + '°C' : '--°C') +
+        (entry.weather.low != null ? ' / ' + entry.weather.low + '°C' : '');
+      document.getElementById('weather-text').textContent = entry.weather.condition || '';
+      document.getElementById('weather-note').textContent = entry.weather.note || '';
+      renderList(document.getElementById('news-list'), entry.news);
+      renderList(document.getElementById('ai-list'), entry.ai);
+      document.getElementById('placeholder-note').hidden = true;
+    }
+
+    function renderHistory(entries) {
+      if (!entries.length) return;
+      var section = document.getElementById('history-section');
+      var list = document.getElementById('history-list');
+      list.innerHTML = '';
+      entries.forEach(function (entry) {
+        var item = document.createElement('div');
+        item.className = 'history-item';
+
+        var date = document.createElement('div');
+        date.className = 'h-date';
+        date.textContent = formatDate(entry.date);
+        item.appendChild(date);
+
+        var weather = document.createElement('div');
+        weather.className = 'h-weather';
+        var temp = (entry.weather.high != null ? entry.weather.high + '°C' : '--°C') +
+          (entry.weather.low != null ? ' / ' + entry.weather.low + '°C' : '');
+        weather.textContent = temp + (entry.weather.condition ? ' ・ ' + entry.weather.condition : '');
+        item.appendChild(weather);
+
+        var ul = document.createElement('ul');
+        renderList(ul, (entry.news || []).slice(0, 2).concat((entry.ai || []).slice(0, 1)));
+        item.appendChild(ul);
+
+        list.appendChild(item);
+      });
+      section.hidden = false;
+    }
+
+    fetch('data/briefings.json', { cache: 'no-store' })
+      .then(function (res) { return res.ok ? res.json() : { entries: [] }; })
+      .then(function (data) {
+        var entries = data.entries || [];
+        if (!entries.length) return;
+        renderToday(entries[0]);
+        renderHistory(entries.slice(1, 4));
+      })
+      .catch(function () { /* keep placeholder content */ });
   </script>
 </body>
 </html>
